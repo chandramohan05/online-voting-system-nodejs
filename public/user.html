@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Voter Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/styles.css" rel="stylesheet">
+  </head>
+  <body class="p-4">
+    <div class="navbar"><div class="container-card"><strong>Voter Registration</strong></div></div>
+    <div class="container-card">
+      <div class="card">
+        <form id="registrationForm">
+          <div class="mb-3">
+            <label for="voterId" class="form-label">Voter ID</label>
+            <input id="voterId" class="form-control" placeholder="Enter Voter ID (V12345)" required pattern="V\d{5}">
+            <div class="form-text">Voter ID must start with V followed by 5 digits</div>
+          </div>
+          <div class="mb-3">
+            <label for="voterName" class="form-label">Full Name</label>
+            <input id="voterName" class="form-control" placeholder="Enter your full name" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Register & Continue</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        let voterId = document.getElementById('voterId').value.trim().toUpperCase();
+        // Auto-prefix V if user types only 5 digits
+        if (/^\d{5}$/.test(voterId)) voterId = 'V' + voterId;
+        const voterName = document.getElementById('voterName').value.trim();
+        
+        try {
+          const r = await fetch('/register-voter', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({voterId, name: voterName}) 
+          });
+          
+          const data = await r.json();
+          if (r.ok) {
+            localStorage.setItem('voterId', voterId);
+            window.location.href = '/elections.html';
+          } else {
+            alert('Registration failed: ' + (data.message || 'Unknown error'));
+          }
+        } catch (error) {
+          console.error('Registration error:', error);
+          alert('Registration failed. Please try again.');
+        }
+      });
+    </script>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vote</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/styles.css" rel="stylesheet">
+  </head>
+  <body class="p-4">
+    <div class="navbar">
+      <div class="container-card d-flex justify-content-between align-items-center">
+        <h3 class="mb-0"><i class="fas fa-vote-yea me-2"></i><span id="ename">Vote</span></h3>
+        <a href="/elections.html" class="btn btn-outline-primary">
+          <i class="fas fa-arrow-left me-2"></i>Back to Elections
+        </a>
+      </div>
+    </div>
+    <div class="container-card">
+      <div class="card">
+        <h4 class="text-center mb-4">Select Your Candidate</h4>
+        <div id="participants" class="row g-3"></div>
+      </div>
+    </div>
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+      const params = new URLSearchParams(location.search);
+      const id = params.get('id');
+      const voterId = localStorage.getItem('voterId');
+      if (!voterId) { alert('Please verify first'); window.location.href = '/user.html'; }
+      
+      async function checkVotingStatus() {
+        const r = await fetch(`/voter/${voterId}/election/${id}/status`);
+        const data = await r.json();
+        if (data.hasVoted) {
+          alert('You have already voted in this election');
+          window.location.href = '/elections.html';
+          return false;
+        }
+        return true;
+      }
+      
+      async function load(){
+        // First check if user has already voted
+        if (!await checkVotingStatus()) return;
+        
+        const r = await fetch('/elections/' + id);
+        if (!r.ok) { alert('Not found'); return; }
+        const j = await r.json();
+        document.getElementById('ename').textContent = j.election.name;
+        const cont = document.getElementById('participants'); cont.innerHTML='';
+        for (const p of j.participants) {
+          const d = document.createElement('div'); d.className='card p-3 mb-2';
+          d.innerHTML = `<div>${p.name} <button class='btn btn-sm btn-primary' data-pid='${p.id}'>Vote</button></div>`;
+          cont.appendChild(d);
+        }
+        cont.addEventListener('click', async (ev)=>{
+          if (ev.target.matches('button[data-pid]')){
+            const pid = ev.target.getAttribute('data-pid');
+            const r = await fetch('/vote', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ electionId: id, participantId: pid, voterId }) });
+            const j = await r.json();
+            if (r.ok) { alert('Vote recorded'); window.location.href = '/elections.html'; } else { alert('Error: '+JSON.stringify(j)); }
+          }
+        });
+      }
+      load();
+    </script>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</html>

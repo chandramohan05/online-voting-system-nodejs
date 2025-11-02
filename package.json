@@ -1,0 +1,20 @@
+{
+  "name": "online-voting-prototype",
+  "version": "0.1.0",
+  "description": "Prototype online voting app (admin create election, users verify via OTP and vote).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "chart.js": "^4.4.0",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "sqlite": "^4.1.2",
+    "sqlite3": "^5.1.6",
+    "twilio": "^4.23.0",
+    "uuid": "^9.0.0"
+  }
+}
