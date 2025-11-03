@@ -26,7 +26,8 @@ pipeline {
         stage('Deploy / Restart Server') {
             steps {
                 echo '🚀 Restarting Node.js server...'
-                bat 'taskkill /IM node.exe /F || echo No Node process running'
+                // Make this safe even if no Node process is running
+                bat 'taskkill /IM node.exe /F || exit /b 0'
                 bat 'start /B node server.js'
             }
         }
