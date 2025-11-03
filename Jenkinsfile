@@ -23,17 +23,17 @@ pipeline {
             }
         }
 
-        stage('Deploy / Restart Server') {
-            steps {
-                echo '🚀 Restarting Node.js server (detached mode)...'
-                // Stop any previous Node.js instance
-                bat '''
-                taskkill /IM node.exe /F || exit /b 0
-                REM Start Node.js in a new detached CMD window and log output
-                start "NodeApp" cmd /c "node server.js > server_log.txt 2>&1"
-                '''
-            }
-        }
+       stage('Deploy / Restart Server') {
+    steps {
+        echo '🚀 Restarting Node.js server (persistent mode)...'
+        bat '''
+        taskkill /IM node.exe /F || exit /b 0
+        echo Starting Node.js in detached background process...
+        powershell -Command "Start-Process 'node' 'server.js' -WindowStyle Hidden -RedirectStandardOutput 'server_log.txt' -RedirectStandardError 'server_log.txt'"
+        '''
+    }
+}
+
 
         stage('Verify Server') {
             steps {
