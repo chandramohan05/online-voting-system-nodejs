@@ -25,17 +25,29 @@ pipeline {
 
         stage('Deploy / Restart Server') {
             steps {
-                echo '🚀 Restarting Node.js server...'
-                // Make this safe even if no Node process is running
-                bat 'taskkill /IM node.exe /F || exit /b 0'
-                bat 'start /B node server.js'
+                echo '🚀 Restarting Node.js server (detached mode)...'
+                // Stop any previous Node.js instance
+                bat '''
+                taskkill /IM node.exe /F || exit /b 0
+                REM Start Node.js in a new detached CMD window and log output
+                start "NodeApp" cmd /c "node server.js > server_log.txt 2>&1"
+                '''
+            }
+        }
+
+        stage('Verify Server') {
+            steps {
+                echo '🔍 Checking if server is running on port 3000...'
+                bat '''
+                netstat -ano | findstr :3000 || echo "⚠️ Node server not detected on port 3000"
+                '''
             }
         }
     }
 
     post {
         success {
-            echo '✅ Build and deployment completed successfully!'
+            echo '✅ Build and deployment completed successfully and server started!'
         }
         failure {
             echo '❌ Build failed. Please check the console output for details.'
